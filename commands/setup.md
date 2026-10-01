@@ -52,22 +52,10 @@ If `existing` is `other`, ask with AskUserQuestion:
 
 On "Keep", stop without changing anything. Only ever show `existingPreview`, never the raw command, because it may contain secrets.
 
-## Step 4: Auto-refresh
-
-Claude Code re-runs the status line after each message and on a few other events, so countdowns such as the usage reset time go stale while the session is idle. Ask with AskUserQuestion:
-
-- header: "Auto-refresh"
-- question: "Re-run the HUD on a timer so countdowns stay current between messages?"
-- options:
-  - "Every 5 seconds (Recommended)": `{REFRESH}` is `5`
-  - "No timer": `{REFRESH}` is `0`
-
-If the user gives a number through "Other", use it (minimum 1). A declining "Other" answer means `0`.
-
-## Step 5: Install
+## Step 4: Install
 
 ```bash
-"{RUNTIME}" "${CLAUDE_PLUGIN_ROOT}/scripts/setup.mjs" install --shell {SHELL} --refresh-interval {REFRESH}
+"{RUNTIME}" "${CLAUDE_PLUGIN_ROOT}/scripts/setup.mjs" install --shell {SHELL}
 ```
 
 This does the following:
@@ -92,7 +80,7 @@ It should print two HUD lines within a few seconds. If it errors or prints nothi
 2. Restore the backup by copying `backupPath` over `settingsPath`.
 3. Stop.
 
-## Step 6: Optional features
+## Step 5: Optional features
 
 Ask with AskUserQuestion:
 
@@ -113,7 +101,7 @@ If the user selects anything, set those keys to `true` in `<config dir>/plugins/
 
 Mention that `/claude-hud:configure` covers everything else.
 
-## Step 7: Finish
+## Step 6: Finish
 
 Claude Code reloads settings automatically, so the HUD appears after the user's next message. No restart is needed.
 
@@ -123,7 +111,7 @@ Ask with AskUserQuestion: "Setup complete! The HUD should appear below your inpu
 
 **If no**, check these in order:
 
-1. Run the Step 5 test again and show its output.
+1. Run the Step 4 test again and show its output.
 2. If there's no output, check that the plugin is installed: `ls "<config dir>/plugins/cache/"*/claude-hud/`. The launcher prints nothing when it finds no install. If the directory is missing, reinstall with `/plugin install claude-hud`.
 3. If the runtime moved (nvm, mise, and asdf upgrades change the path), run setup again.
 4. On Windows, dozens of idle `node.exe` processes come from a setup that predates the cmd.exe shim. Kill them and run setup again.
