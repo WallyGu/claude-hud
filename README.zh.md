@@ -118,7 +118,7 @@ Claude HUD 是一个[状态栏](https://code.claude.com/docs/en/statusline)命�
 | `display.showAddedDirs` | boolean | true | 显示来自 `/add-dir` 的额外工作区目录（如 `+sparkle +lib-foo`）；空数组不显示任何内容。在两种布局中最多渲染 5 个目录（溢出显示为 `+N more`），基名截断为 24 个字符并加 `…` |
 | `display.addedDirsLayout` | `inline` \| `line` | `inline` | `inline` 将目录放在项目名称旁边，每个目录带 `+name` 前缀；`line` 在单独的 `Added dirs: name1, name2` 行渲染（无 `+` 前缀，逗号分隔） |
 | `display.showContextBar` | boolean | true | 显示可视化上下文进度条 `████░░░░░░` |
-| `display.contextValue` | `percent` \| `tokens` \| `remaining` \| `both` | `percent` | 上下文显示格式（`45%`、`45k/200k`、剩余 `55%` 或 `45% (45k/200k)`） |
+| `display.contextValue` | `percent` \| `tokens` \| `remaining` \| `both` \| `percentWindow` | `percent` | 上下文显示格式（`45%`、`45k/200k`、剩余 `55%`、`45% (45k/200k)` 或 `45%/200k`） |
 | `display.autoCompactWindow` | number \| `null` | `null` | 设为正数（如 `200000`）时，按此自动压缩窗口而不是完整模型上下文窗口计算上下文百分比，以匹配 `/context`。留空或 `null` 保持默认全窗口行为 |
 | `display.showConfigCounts` | boolean | false | 显示 CLAUDE.md、rules、MCPs、hooks 数量 |
 | `display.environmentThreshold` | number | 0 | 配置计数总和达到此值前隐藏（0 = 始终显示） |
@@ -156,6 +156,11 @@ Claude HUD 是一个[状态栏](https://code.claude.com/docs/en/statusline)命�
 | `display.showAgents` | boolean | false | 显示 Agent 活动行 |
 | `display.showTodos` | boolean | false | 显示待办进度行 |
 | `display.showSessionName` | boolean | false | 显示会话名称：`/rename` 设置的名称，或 Claude Code 生成的标题 |
+| `display.showSessionId` | boolean | false | 在首行显示会话 ID 前缀 |
+| `display.sessionIdLength` | number | 8 | 会话 ID 最多显示的字符数（0 = 完整） |
+| `display.showPeerAddress` | boolean | false | 在首行显示 Remote Control 的本地 socket 路径（`/tmp/cc-socks/<pid>.sock`） |
+| `display.modelOnContextLine` | boolean | false | 展开模式：模型徽标移到 context 行前，费用改由 `costSpeed` 元素显示 |
+| `display.memoryOnProjectLine` | boolean | false | 展开模式：RAM 显示移到首行（请从 `elementOrder` 中去掉 `memory` 以免重复） |
 | `display.showSessionTokens` | boolean | false | 显示本会话累计的 token 总量，例如 `Tokens 262k (in: 6k, out: 2k, cache: 254k)` |
 | `display.showAuth` | boolean | false | 在第一行末尾显示当前登录的认证方式（订阅计划），例如 `Claude Max 20x`。来自 `~/.claude.json`（或覆盖配置目录时的 `$CLAUDE_CONFIG_DIR/.claude.json`）的 `oauthAccount`；无 OAuth 但设置了 `ANTHROPIC_API_KEY` 时显示 `API Key` |
 | `display.showAuthUser` | boolean | false | 在认证方式旁显示已登录账号（邮箱本地部分，回退到资料显示名） |

@@ -8,7 +8,7 @@ import { cacheHitRateLine, promptCacheLine, sessionTimeLine } from './lines.js';
 import { orderParts } from './order.js';
 import {
   advisorPart, authPart, compactionsPart, configCountParts, costPart, customLinePart, durationPart, extraPart,
-  modelBadge, projectParts, sessionNamePart, sessionTokensSummary, speedPart, versionPart, type Part,
+  modelBadge, peerAddressPart, projectParts, sessionIdPart, sessionNamePart, sessionTokensSummary, speedPart, versionPart, type Part,
 } from './parts.js';
 import { usageParts } from './usage.js';
 
@@ -28,7 +28,7 @@ function sessionLine(f: Frame): string {
   };
   add(customLinePart(f, 'first'));
   add(modelCluster(f), 'model');
-  for (const part of projectParts(f, 'compact')) add(part, 'project');
+  for (const part of projectParts(f, 'compact')) add(part.text, part.key);
   add(sessionNamePart(f), 'sessionName');
   add(versionPart(f), 'version');
   configCountParts(f).forEach((part) => add(part));
@@ -44,6 +44,8 @@ function sessionLine(f: Frame): string {
   add(speedPart(f), 'speed');
   add(extraPart(f), 'extra');
   add(authPart(f), 'auth');
+  add(sessionIdPart(f), 'sessionId');
+  add(peerAddressPart(f), 'peerAddress');
   add(customLinePart(f, 'last'));
   const line = orderParts(parts, f.config?.projectLineOrder ?? DEFAULT_PROJECT_LINE_ORDER).join(' | ');
   return line + tokenBreakdown(f);

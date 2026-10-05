@@ -9,7 +9,7 @@ import { addedDirsLine, cacheHitRateLine, environmentLine, memoryLine, promptCac
 import { orderParts } from './order.js';
 import {
   advisorPart, authPart, compactionsPart, costPart, customLinePart, durationPart, extraPart, modelBadge,
-  projectParts, sessionNamePart, sessionTokensSummary, speedPart, versionPart, type Part,
+  peerAddressPart, projectParts, sessionIdPart, sessionNamePart, sessionTokensSummary, speedPart, versionPart, type Part,
 } from './parts.js';
 import { usageParts } from './usage.js';
 import { gitFilesLine } from './vcs.js';
@@ -24,26 +24,37 @@ function projectLine(f: Frame): string | null {
     if (text) parts.push({ key, text });
   };
   add(customLinePart(f, 'first'));
-  if (display?.showModel !== false) add(modelBadge(f), 'model');
-  for (const part of projectParts(f, 'expanded')) add(part, 'project');
+  if (display?.showModel !== false && !display?.modelOnContextLine) add(modelBadge(f), 'model');
+  for (const part of projectParts(f, 'expanded')) add(part.text, part.key);
   add(advisorPart(f), 'advisor');
   add(sessionNamePart(f), 'sessionName');
   add(versionPart(f), 'version');
   add(extraPart(f), 'extra');
   add(durationPart(f), 'duration');
-  add(costPart(f), 'cost');
+  if (!display?.modelOnContextLine) add(costPart(f), 'cost');
   add(speedPart(f), 'speed');
   add(authPart(f), 'auth');
+  add(sessionIdPart(f), 'sessionId');
+  add(peerAddressPart(f), 'peerAddress');
+  if (display?.memoryOnProjectLine) add(memoryLine(f), 'projectMemory');
   add(customLinePart(f, 'last'));
   if (parts.length === 0) return null;
   return orderParts(parts, f.config?.projectLineOrder ?? DEFAULT_PROJECT_LINE_ORDER).join(' │ ');
+}
+
+// modelOnContextLine moves the model badge from the first line to lead the context line.
+function contextWithModel(f: Frame, align: LabelAlign): string {
+  const display = f.config?.display;
+  const line = contextLine(f, align);
+  return display?.modelOnContextLine && display.showModel !== false ? `${modelBadge(f)} │ ${line}` : line;
 }
 
 function elementLine(f: Frame, element: HudElement, align: LabelAlign = {}): string | null {
   switch (element) {
     case 'project': return projectLine(f);
     case 'addedDirs': return addedDirsLine(f);
-    case 'context': return contextLine(f, align);
+    case 'context': return contextWithModel(f, align);
+    case 'costSpeed': return f.config?.display?.modelOnContextLine ? costPart(f) : null;
     case 'usage': return usageParts(f, 'expanded', align)?.join(' | ') ?? null;
     case 'promptCache': return promptCacheLine(f);
     case 'cacheHitRate': return cacheHitRateLine(f);

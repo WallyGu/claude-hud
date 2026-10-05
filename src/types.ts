@@ -191,6 +191,7 @@ export interface RenderContext {
   hooksCount: number;
   costTotals: CostTotals | null;
   outputSpeed: number | null;
+  peerAddressPid?: number | null;
   gitStatus: GitStatus | null;
   usageData: UsageData | null;
   memoryUsage: MemoryInfo | null;

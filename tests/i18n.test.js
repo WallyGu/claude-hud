@@ -14,7 +14,7 @@ test('both Chinese locales define every English message key', () => {
 });
 
 test('t() follows the language, with zh and zh-TW as aliases', () => {
-  assert.equal(t('label.approxRam'), 'Approx RAM');
+  assert.equal(t('label.approxRam'), 'RAM');
   for (const [language, expected] of [['zh', '内存'], ['zh-Hans', '内存'], ['zh-Hant', '記憶體'], ['zh-TW', '記憶體']]) {
     setLanguage(language);
     assert.equal(t('label.approxRam'), expected, language);

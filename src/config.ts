@@ -15,7 +15,7 @@ const UNSAFE_CONFIG_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const LANGUAGES = ['en', 'zh', 'zh-Hans', 'zh-Hant', 'zh-TW'] as const satisfies readonly Language[];
 const LINE_LAYOUTS = ['compact', 'expanded'] as const;
 const PATH_LEVELS = [1, 2, 3, 'full'] as const;
-const CONTEXT_VALUE_MODES = ['percent', 'tokens', 'remaining', 'both'] as const;
+const CONTEXT_VALUE_MODES = ['percent', 'tokens', 'remaining', 'both', 'percentWindow'] as const;
 const USAGE_VALUE_MODES = ['percent', 'remaining'] as const;
 const GIT_BRANCH_OVERFLOW_MODES = ['truncate', 'wrap'] as const;
 // full: display name as-is; compact: drop the context-window suffix; short: also drop "Claude ".
@@ -43,6 +43,7 @@ const ELEMENTS = [
   'agents',
   'todos',
   'sessionTime',
+  'costSpeed',
 ] as const;
 
 // Orderable segments of the first line, shared by the expanded and compact layouts.
@@ -57,6 +58,10 @@ const FIRST_LINE_SEGMENTS = [
   'cost',
   'speed',
   'auth',
+  'sessionId',
+  'peerAddress',
+  'projectMemory',
+  'git',
 ] as const;
 
 export type LineLayoutType = typeof LINE_LAYOUTS[number];
@@ -154,6 +159,14 @@ export interface HudConfig {
     showAgents: boolean;
     showTodos: boolean;
     showSessionName: boolean;
+    showSessionId: boolean;
+    // Max characters of the session id (0 = full).
+    sessionIdLength: number;
+    showPeerAddress: boolean;
+    // Expanded: model badge leads the context line and cost moves to the costSpeed element.
+    modelOnContextLine: boolean;
+    // Expanded: the RAM readout joins the first line (omit memory from elementOrder to avoid a duplicate).
+    memoryOnProjectLine: boolean;
     showAuth: boolean;
     showAuthUser: boolean;
     // Max characters of the account name (0 = full).
@@ -253,6 +266,11 @@ export const DEFAULT_CONFIG: HudConfig = {
     showAgents: false,
     showTodos: false,
     showSessionName: false,
+    showSessionId: false,
+    sessionIdLength: 8,
+    showPeerAddress: false,
+    modelOnContextLine: false,
+    memoryOnProjectLine: false,
     showAuth: false,
     showAuthUser: false,
     authUserLength: 8,
@@ -401,6 +419,7 @@ const RULES: Record<string, Rule> = {
   'display.toolsMaxVisible': count,
   'display.skillsMaxVisible': count,
   'display.authUserLength': count,
+  'display.sessionIdLength': count,
   'display.effortFormat': oneOf(EFFORT_FORMATS),
   'display.mergeGroups': mergeGroups,
   'display.rightAlign': names(ELEMENTS, false),

@@ -135,8 +135,8 @@ const withMemory = { display: { showMemoryUsage: true }, elementOrder: ['project
 test('a visible memory bar widens the other bar labels to match', () => {
   const data = usage({ sevenDay: 85 });
   assert.deepEqual(lines(ctx({ usageData: data, memoryUsage: memory, config: withMemory })).slice(1), [
-    'Context    █████░░░░░ 45% │ Usage      ███░░░░░░░ 25% (resets in 1h 30m) | Weekly     █████████░ 85% (resets in 2d 2h)',
-    'Approx RAM █████░░░░░ 8.0 GB / 16 GB (50%)',
+    'Context █████░░░░░ 45% │ Usage   ███░░░░░░░ 25% (resets in 1h 30m) | Weekly  █████████░ 85% (resets in 2d 2h)',
+    'RAM     █████░░░░░ 8.0 GB / 16 GB (50%)',
   ]);
   assert.equal(lines(ctx({ usageData: data, config: withMemory }))[1].slice(0, 9), 'Context █');
   assert.equal(lines(ctx({ usageData: data, memoryUsage: memory, config: compact(withMemory) })).length, 1, 'memory is expanded-only');
@@ -144,10 +144,10 @@ test('a visible memory bar widens the other bar labels to match', () => {
 
 test('a merged row that does not fit stacks with aligned labels', () => {
   assert.deepEqual(lines(ctx({ usageData: usage({ sevenDay: 85 }), memoryUsage: memory, config: withMemory }), 60).slice(1), [
-    'Context    ███░░░ 45%',
-    'Usage      ██░░░░ 25% (resets in 1h 30m)',
-    'Weekly     █████░ 85% (resets in 2d 2h)',
-    'Approx RAM ███░░░ 8.0 GB / 16 GB (50%)',
+    'Context ███░░░ 45%',
+    'Usage   ██░░░░ 25% (resets in 1h 30m)',
+    'Weekly  █████░ 85% (resets in 2d 2h)',
+    'RAM     ███░░░ 8.0 GB / 16 GB (50%)',
   ]);
   assert.deepEqual(lines(ctx({ usageData: usage() }), 50).slice(1), ['Context ██░░ 45%', 'Usage   █░░░ 25% (resets in 1h 30m)']);
   setLanguage('zh-Hans');
@@ -372,4 +372,31 @@ test('untrusted text cannot emit terminal control sequences', () => {
     assert.doesNotMatch(visible, /[\x00-\x09\x0b-\x1f\x7f-\x9f\u202a-\u202e]/);
     assert.ok(!out.includes('\x1b]52'));
   }
+});
+
+test('showSessionId and showPeerAddress add first-line segments', () => {
+  const config = { display: { showSessionId: true, sessionIdLength: 8, showPeerAddress: true } };
+  const stdin = { session_id: '0123456789abcdef' };
+  const [first] = lines(ctx({ config, stdin, peerAddressPid: 4242 }));
+  assert.match(first, /01234567 │ \/tmp\/cc-socks\/4242\.sock$/);
+  assert.doesNotMatch(lines(ctx({ config, stdin }))[0], /cc-socks/);
+});
+
+test('modelOnContextLine moves the model badge and cost, costSpeed shows the cost', () => {
+  const config = { display: { modelOnContextLine: true, showCost: true } };
+  const stdin = { cost: { total_cost_usd: 1.5 } };
+  const out = lines(ctx({ config, stdin }));
+  assert.ok(!out[0].includes('[Opus]') && !out[0].includes('Cost'), out[0]);
+  assert.ok(out.some((line) => line.startsWith('[Opus] │ Context')), out.join('\n'));
+  assert.ok(out.some((line) => line.includes('Cost $1.50')), out.join('\n'));
+});
+
+test("projectLineOrder 'git' moves the VCS segment on its own", () => {
+  const gitStatus = { vcs: 'git', branch: 'main', isDirty: false, ahead: 0, behind: 0 };
+  const [first] = lines(ctx({ gitStatus, config: { projectLineOrder: ['git', 'project', 'model'] } }));
+  assert.match(first, /^git:\(main\) │ my-project │ \[Opus\]/);
+});
+
+test('contextValue percentWindow shows percent over the window size', () => {
+  assert.match(lines(ctx({ config: { display: { contextValue: 'percentWindow' } } })).join('\n'), /45%\/200k/);
 });

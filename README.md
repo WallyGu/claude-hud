@@ -118,7 +118,7 @@ Labels are available in English (the default), Simplified Chinese (`zh-Hans`, al
 | `display.showAddedDirs` | boolean | true | Show extra workspace directories from `/add-dir` (e.g. `+sparkle +lib-foo`); empty array renders nothing. In both layouts at most 5 dirs render (overflow shown as `+N more`) and basenames are truncated to 24 chars with `…` |
 | `display.addedDirsLayout` | `inline` \| `line` | `inline` | `inline` puts dirs next to the project name with a `+name` prefix per dir; `line` renders them on a separate `Added dirs: name1, name2` line (no `+` prefix, comma-separated) |
 | `display.showContextBar` | boolean | true | Show visual context bar `████░░░░░░` |
-| `display.contextValue` | `percent` \| `tokens` \| `remaining` \| `both` | `percent` | Context display format (`45%`, `45k/200k`, `55%` remaining, or `45% (45k/200k)`) |
+| `display.contextValue` | `percent` \| `tokens` \| `remaining` \| `both` \| `percentWindow` | `percent` | Context display format (`45%`, `45k/200k`, `55%` remaining, `45% (45k/200k)`, or `45%/200k`) |
 | `display.autoCompactWindow` | number \| `null` | `null` | When set to a positive number such as `200000`, compute the context percentage against this auto-compact window instead of the full model context window, matching the `/context` figure. Leave unset or `null` to preserve default full-window behavior. |
 | `display.showConfigCounts` | boolean | false | Show CLAUDE.md, rules, MCPs, hooks counts |
 | `display.environmentThreshold` | number | 0 | Hide the config counts until their total reaches this number (0 = always show) |
@@ -156,6 +156,11 @@ Labels are available in English (the default), Simplified Chinese (`zh-Hans`, al
 | `display.showAgents` | boolean | false | Show agents activity line |
 | `display.showTodos` | boolean | false | Show todos progress line |
 | `display.showSessionName` | boolean | false | Show the session name: the `/rename` name, or the title Claude Code generated |
+| `display.showSessionId` | boolean | false | Show a prefix of the session id on the first line |
+| `display.sessionIdLength` | number | 8 | Max characters of the session id (0 = full) |
+| `display.showPeerAddress` | boolean | false | Show the local Remote Control socket path (`/tmp/cc-socks/<pid>.sock`) on the first line |
+| `display.modelOnContextLine` | boolean | false | Expanded: the model badge leads the context line and cost moves to the `costSpeed` element |
+| `display.memoryOnProjectLine` | boolean | false | Expanded: the RAM readout joins the first line (drop `memory` from `elementOrder` to avoid a duplicate) |
 | `display.showSessionTokens` | boolean | false | Show the session's cumulative token totals, e.g. `Tokens 262k (in: 6k, out: 2k, cache: 254k)` |
 | `display.showAuth` | boolean | false | Show the auth method (subscription plan) of the current login as its own segment at the end of the first line, e.g. `Claude Max 20x`. Derived from the `oauthAccount` block in `~/.claude.json` (or `$CLAUDE_CONFIG_DIR/.claude.json` when the config directory is overridden); shows `API Key` when there is no OAuth login but `ANTHROPIC_API_KEY` is set |
 | `display.showAuthUser` | boolean | false | Show the logged-in account (email local part, falling back to profile display name) next to the auth method |

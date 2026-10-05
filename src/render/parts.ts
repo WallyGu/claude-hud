@@ -2,7 +2,8 @@ import type { FirstLineSegment, PathLevels } from '../config.js';
 import { DEFAULT_CONFIG } from '../config.js';
 import { formatAuthSegment } from '../auth.js';
 import { formatUsd } from '../cost.js';
-import { formatModelName, getProviderLabel, resolveModelName } from '../stdin.js';
+import { formatModelName, getProviderLabel, resolveModelName, stdinText } from '../stdin.js';
+import { PEER_SOCKET_DIR } from '../peer-address.js';
 import { t } from '../i18n/index.js';
 import { formatTokens } from '../utils/format.js';
 import { getFileHref, safeHyperlink } from '../utils/hyperlinks.js';
@@ -83,7 +84,7 @@ export function addedDirs(f: Frame, prefix: string, joiner: string): string | nu
  * The project path with its VCS segment, as one part or, with
  * branchOverflow "wrap", two. Expanded links the path and inlines added dirs.
  */
-export function projectParts(f: Frame, layout: Layout): string[] {
+export function projectParts(f: Frame, layout: Layout): Part[] {
   const display = f.config?.display;
   const colors = f.config?.colors;
   let project: string | null = null;
@@ -97,11 +98,17 @@ export function projectParts(f: Frame, layout: Layout): string[] {
   }
 
   const vcs = vcsPart(f, layout);
+  // Listing 'git' in projectLineOrder splits it from the path so it can move on its own.
+  const gitMoves = (f.config?.projectLineOrder ?? []).includes('git');
+  const gitKey: Part['key'] = gitMoves ? 'git' : 'project';
   if (project && vcs) {
     const overflow = f.config.gitStatus?.branchOverflow ?? DEFAULT_CONFIG.gitStatus.branchOverflow;
-    return overflow === 'wrap' ? [project, vcs] : [`${project} ${vcs}`];
+    return overflow === 'wrap' || gitMoves
+      ? [{ key: 'project', text: project }, { key: gitKey, text: vcs }]
+      : [{ key: 'project', text: `${project} ${vcs}` }];
   }
-  return [project ?? vcs].filter((part): part is string => !!part);
+  if (project) return [{ key: 'project', text: project }];
+  return vcs ? [{ key: gitKey, text: vcs }] : [];
 }
 
 const ADVISOR_MAX_LENGTH = 64;
@@ -162,6 +169,18 @@ export function costPart(f: Frame): string | null {
 export function speedPart(f: Frame): string | null {
   if (!f.config?.display?.showSpeed || f.outputSpeed === null) return null;
   return labeled(f, `${t('format.out')}: ${f.outputSpeed.toFixed(1)} ${t('format.tokPerSec')}`);
+}
+
+export function sessionIdPart(f: Frame): string | null {
+  const id = f.config?.display?.showSessionId ? stdinText(f.stdin.session_id, 64) : undefined;
+  if (!id) return null;
+  const length = f.config.display.sessionIdLength ?? 8;
+  return labeled(f, length > 0 ? id.slice(0, length) : id);
+}
+
+export function peerAddressPart(f: Frame): string | null {
+  if (!f.config?.display?.showPeerAddress || f.peerAddressPid == null) return null;
+  return labeled(f, `${PEER_SOCKET_DIR}/${f.peerAddressPid}.sock`);
 }
 
 export function authPart(f: Frame): string | null {
