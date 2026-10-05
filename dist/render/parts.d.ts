@@ -13,7 +13,7 @@ export declare function addedDirs(f: Frame, prefix: string, joiner: string): str
  * The project path with its VCS segment, as one part or, with
  * branchOverflow "wrap", two. Expanded links the path and inlines added dirs.
  */
-export declare function projectParts(f: Frame, layout: Layout): string[];
+export declare function projectParts(f: Frame, layout: Layout): Part[];
 export declare function advisorPart(f: Frame): string | null;
 export declare function sessionNamePart(f: Frame): string | null;
 export declare function versionPart(f: Frame): string | null;
@@ -22,6 +22,8 @@ export declare function extraPart(f: Frame): string | null;
 /** `Cost $1.23 | Today $4.56 | Week $12.00`, one dim span. */
 export declare function costPart(f: Frame): string | null;
 export declare function speedPart(f: Frame): string | null;
+export declare function sessionIdPart(f: Frame): string | null;
+export declare function peerAddressPart(f: Frame): string | null;
 export declare function authPart(f: Frame): string | null;
 export declare function customLinePart(f: Frame, position: 'first' | 'last'): string | null;
 /** `2 CLAUDE.md`, `3 rules`, `4 MCPs`, `1 hooks`, once their total reaches environmentThreshold. */

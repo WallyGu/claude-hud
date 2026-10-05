@@ -6,10 +6,12 @@ export function formatTokens(n) {
         return `${(n / 1000).toFixed(0)}k`;
     return n.toString();
 }
-// percent → "45%", tokens → "45k/200k", remaining → "55%", both → "45% (45k/200k)".
+// percentWindow → "45%/1M"; percent → "45%", tokens → "45k/200k", remaining → "55%", both → "45% (45k/200k)".
 export function formatContextValue(context, mode) {
     const { percent, tokens, size } = context;
     const ratio = size > 0 ? `${formatTokens(tokens)}/${formatTokens(size)}` : formatTokens(tokens);
+    if (mode === 'percentWindow')
+        return size > 0 ? `${percent}%/${formatTokens(size).replace(/\.0(?=[a-zA-Z]$)/, '')}` : `${percent}%`;
     if (mode === 'tokens')
         return ratio;
     if (mode === 'both')

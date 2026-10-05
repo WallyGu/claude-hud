@@ -12,7 +12,7 @@ const UNSAFE_CONFIG_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const LANGUAGES = ['en', 'zh', 'zh-Hans', 'zh-Hant', 'zh-TW'];
 const LINE_LAYOUTS = ['compact', 'expanded'];
 const PATH_LEVELS = [1, 2, 3, 'full'];
-const CONTEXT_VALUE_MODES = ['percent', 'tokens', 'remaining', 'both'];
+const CONTEXT_VALUE_MODES = ['percent', 'tokens', 'remaining', 'both', 'percentWindow'];
 const USAGE_VALUE_MODES = ['percent', 'remaining'];
 const GIT_BRANCH_OVERFLOW_MODES = ['truncate', 'wrap'];
 // full: display name as-is; compact: drop the context-window suffix; short: also drop "Claude ".
@@ -39,6 +39,7 @@ const ELEMENTS = [
     'agents',
     'todos',
     'sessionTime',
+    'costSpeed',
 ];
 // Orderable segments of the first line, shared by the expanded and compact layouts.
 const FIRST_LINE_SEGMENTS = [
@@ -52,6 +53,10 @@ const FIRST_LINE_SEGMENTS = [
     'cost',
     'speed',
     'auth',
+    'sessionId',
+    'peerAddress',
+    'projectMemory',
+    'git',
 ];
 export const DEFAULT_ELEMENT_ORDER = [...ELEMENTS];
 export const DEFAULT_MERGE_GROUPS = [['context', 'usage']];
@@ -112,6 +117,11 @@ export const DEFAULT_CONFIG = {
         showAgents: false,
         showTodos: false,
         showSessionName: false,
+        showSessionId: false,
+        sessionIdLength: 8,
+        showPeerAddress: false,
+        modelOnContextLine: false,
+        memoryOnProjectLine: false,
         showAuth: false,
         showAuthUser: false,
         authUserLength: 8,
@@ -243,6 +253,7 @@ const RULES = {
     'display.toolsMaxVisible': count,
     'display.skillsMaxVisible': count,
     'display.authUserLength': count,
+    'display.sessionIdLength': count,
     'display.effortFormat': oneOf(EFFORT_FORMATS),
     'display.mergeGroups': mergeGroups,
     'display.rightAlign': names(ELEMENTS, false),

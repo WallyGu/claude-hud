@@ -1,7 +1,8 @@
 import { DEFAULT_CONFIG } from '../config.js';
 import { formatAuthSegment } from '../auth.js';
 import { formatUsd } from '../cost.js';
-import { formatModelName, getProviderLabel, resolveModelName } from '../stdin.js';
+import { formatModelName, getProviderLabel, resolveModelName, stdinText } from '../stdin.js';
+import { PEER_SOCKET_DIR } from '../peer-address.js';
 import { t } from '../i18n/index.js';
 import { formatTokens } from '../utils/format.js';
 import { getFileHref, safeHyperlink } from '../utils/hyperlinks.js';
@@ -90,11 +91,18 @@ export function projectParts(f, layout) {
             project = project ? `${project} ${dirs}` : dirs;
     }
     const vcs = vcsPart(f, layout);
+    // Listing 'git' in projectLineOrder splits it from the path so it can move on its own.
+    const gitMoves = (f.config?.projectLineOrder ?? []).includes('git');
+    const gitKey = gitMoves ? 'git' : 'project';
     if (project && vcs) {
         const overflow = f.config.gitStatus?.branchOverflow ?? DEFAULT_CONFIG.gitStatus.branchOverflow;
-        return overflow === 'wrap' ? [project, vcs] : [`${project} ${vcs}`];
+        return overflow === 'wrap' || gitMoves
+            ? [{ key: 'project', text: project }, { key: gitKey, text: vcs }]
+            : [{ key: 'project', text: `${project} ${vcs}` }];
     }
-    return [project ?? vcs].filter((part) => !!part);
+    if (project)
+        return [{ key: 'project', text: project }];
+    return vcs ? [{ key: gitKey, text: vcs }] : [];
 }
 const ADVISOR_MAX_LENGTH = 64;
 const ADVISOR_ID = /^(?:claude-)?(opus|sonnet|haiku)-(\d+)-(\d+)/i;
@@ -148,6 +156,18 @@ export function speedPart(f) {
     if (!f.config?.display?.showSpeed || f.outputSpeed === null)
         return null;
     return labeled(f, `${t('format.out')}: ${f.outputSpeed.toFixed(1)} ${t('format.tokPerSec')}`);
+}
+export function sessionIdPart(f) {
+    const id = f.config?.display?.showSessionId ? stdinText(f.stdin.session_id, 64) : undefined;
+    if (!id)
+        return null;
+    const length = f.config.display.sessionIdLength ?? 8;
+    return labeled(f, length > 0 ? id.slice(0, length) : id);
+}
+export function peerAddressPart(f) {
+    if (!f.config?.display?.showPeerAddress || f.peerAddressPid == null)
+        return null;
+    return labeled(f, `${PEER_SOCKET_DIR}/${f.peerAddressPid}.sock`);
 }
 export function authPart(f) {
     return labeled(f, formatAuthSegment(f.authInfo, f.config?.display));

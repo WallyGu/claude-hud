@@ -13,6 +13,7 @@ import { getMemoryUsage } from "./memory.js";
 import { readAuthInfo } from "./auth.js";
 import { getCostTotals } from "./daily-cost.js";
 import { getOutputSpeed } from "./speed.js";
+import { findPeerAddressPid } from "./peer-address.js";
 import { resolveUsage, writeExternalUsageSnapshot } from "./external-usage.js";
 import { setLanguage, t } from "./i18n/index.js";
 const EMPTY_TRANSCRIPT = { tools: [], skills: [], mcpServers: [], mcpErrors: [], agents: [], todos: [] };
@@ -79,6 +80,7 @@ export async function main() {
                 ? getCostTotals(stdin, { allowRoutedCost: display.showRoutedCost, sevenDayResetAt: usageData?.sevenDayResetAt ?? null })
                 : null,
             outputSpeed: display.showSpeed ? getOutputSpeed(stdin, os.homedir()) : null,
+            peerAddressPid: display.showPeerAddress ? findPeerAddressPid() : null,
             gitStatus,
             usageData,
             memoryUsage,
