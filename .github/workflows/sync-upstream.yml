@@ -2,7 +2,6 @@ name: Sync fork with upstream
 
 on:
   schedule:
-    # Daily at 06:00 UTC
     - cron: '0 6 * * *'
   workflow_dispatch: {}
 
@@ -14,7 +13,33 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository != 'jarrodwatts/claude-hud'
     steps:
-      - name: Sync main with jarrodwatts/claude-hud
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh repo sync ${{ github.repository }} --source jarrodwatts/claude-hud --branch main
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge upstream main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/jarrodwatts/claude-hud.git
+          git fetch upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already up to date"; exit 0
+          fi
+          # A conflict fails the job, so local patches never get silently dropped.
+          git merge upstream/main -m "Merge upstream main"
+          git push origin HEAD:main
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Pushes made with GITHUB_TOKEN don't trigger build-dist.yml, so rebuild dist/ here.
+      - name: Rebuild dist
+        run: |
+          npm ci
+          npm run build
+          git add dist/ --force
+          git diff --cached --quiet || (git commit -m "build: compile dist/ [auto]" && git push origin HEAD:main)
